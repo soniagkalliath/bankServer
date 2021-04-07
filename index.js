@@ -17,7 +17,7 @@ const logMiddleware = (req,res,next)=>{
 next()
 }
 
-app.use(logMiddleware);
+//app.use(logMiddleware);
 
 const authMiddleware=(req,res,next)=>{
     if(!req.session.currentUser){
@@ -43,15 +43,19 @@ app.post('/',(req,res)=>{
 })
 
 app.post('/register',(req,res)=>{
-     const result =  dataService.register(req.body.acno,req.body.username,req.body.password)
-  
-    console.log(res.status(result.statusCode).json(result));
-})
+      dataService.register(req.body.acno,req.body.username,req.body.password)
+  .then(result=>{
+    res.status(result.statusCode).json(result)
+  })
+ })
 
 app.post('/login',(req,res)=>{
     //console.log(req.body);
-  const result =  dataService.login(req,req.body.acno,req.body.password)
-  console.log(res.status(result.statusCode).json(result));
+ dataService.login(req,req.body.acno,req.body.password)
+ .then(result=>{
+    res.status(result.statusCode).json(result)
+ })
+ 
 })
 
 app.post('/deposit',authMiddleware,(req,res)=>{

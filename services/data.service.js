@@ -1,3 +1,5 @@
+const db =require('./db');
+
 let accountDetails ={
        
     1000:{acno:1000,balance:10000,username:"Ajith",password:"testuser"},
@@ -9,62 +11,58 @@ let accountDetails ={
 let currentUser;
 
 const register = (acno,username,password) =>{
-    console.log("register called")
-   
-    if(acno in accountDetails){
-      
-      return{
+    //console.log("register called")
+    
+    return db.User.findOne({
+      acno}).then(user=>{
+     console.log(user)
+      if(user){
+        return{
           status:false,
           statusCode: 422,
           message:"User already exist. Please Log in"
       } 
-    }
-    
-    accountDetails[acno]={
-      acno,
+      }
+      else{
+        const newUser = new db.User({
+          acno,
       balance:0,
       username,
       password
-    }
-  // this.saveDetails();
-    console.log(this.accountDetails);
-    return{
-        status:true,
-        statusCode: 200,
-        message:"Registration successful"
-    } 
+        });
+        newUser.save();
+        return{
+          status:true,
+          statusCode: 200,
+          message:"Registration successful"
+      } 
+      }
+    })
   }
 
   const login = (req,accno,pwd) =>{
-    let dataset=accountDetails;
-       if(accno in dataset){
-         var pswd1 = dataset[accno].password
-         //console.log(pswd1);
-         if(pswd1==pwd){
-         req.session.currentUser= dataset[accno]
-          //this.saveDetails();
+    var acno = parseInt(accno);
+    return db.User.findOne({
+      acno,
+      password:pwd
+    }).then(user=>{
+      if(user){
+        req.session.currentUser= user
+        
           return{
             status:true,
             statusCode: 200,
             message:"Login Successful"
         } 
-     }
-      else{
-       return{
-            status:false,
-            statusCode: 422,
-            message:"Incorrect password"
-        }
-       }
       }
-       else{
-        return{
-            status:false,
-            statusCode: 422,
-            message:"No user exist with provided Account Number"
-        } 
-       }
-}
+      return{
+        status:false,
+        statusCode: 422,
+        message:"Invalid Credentials"
+    } 
+    })
+
+   }
 
 
 const deposit = (acno,pwd,amount) => {
